@@ -16,6 +16,10 @@ public class User {
 	private Date dob;
 	private String identityNumber;
 	
+	protected User () {
+		
+	}
+	
 	public User(String name, String gender, String phoneNumber, Date dob, String identityNumber) {
 		this.name = name;
 		this.gender = gender;

@@ -23,7 +23,7 @@ public class UserService {
 	}
 	
 	public void addUsers (List<User> users) {
-		userRepository.saveAll(users);
+		userRepository.save(users);
 	}
 
 }

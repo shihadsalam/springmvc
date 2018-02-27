@@ -2,13 +2,16 @@ package com.webapp.config;
 
 import java.util.Properties;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jndi.JndiTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.Database;
@@ -20,22 +23,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement
+@PropertySource(value = {"classpath:application.properties"})
 @ComponentScan(basePackages = {"com.webapp"})
 @EnableJpaRepositories(basePackages = {"com.webapp.repositories"})
 public class AppConfiguration extends WebMvcConfigurerAdapter{
 	
-	private JndiTemplate jndiTemplate = new JndiTemplate();
-
-	public DataSource dataSource() {
-		DataSource dataSource = null;
-		try {
-			dataSource = jndiTemplate.lookup("java:comp/env/jdbc/mysqldb", DataSource.class);
-		} catch (NamingException e) {
-			e.printStackTrace();
-		}
-		return dataSource;
-	}
+    @Autowired
+    private Environment env;
 	
+	@Bean
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		vendorAdapter.setDatabase(Database.MYSQL);
@@ -48,11 +44,22 @@ public class AppConfiguration extends WebMvcConfigurerAdapter{
 		return entityManagerFactory;
 	}
 	
+	@Bean
 	public JpaTransactionManager transactionManager() {
 		JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
 		jpaTransactionManager.setEntityManagerFactory(entityManagerFactory()
 				.getObject());
 		return jpaTransactionManager;
+	}
+	
+	@Bean
+	public DataSource dataSource() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+		dataSource.setDriverClassName(env.getRequiredProperty("jdbc.driverClassName"));
+        dataSource.setUrl(env.getRequiredProperty("jdbc.url"));
+        dataSource.setUsername(env.getRequiredProperty("jdbc.username"));
+        dataSource.setPassword(env.getRequiredProperty("jdbc.password"));
+		return dataSource;
 	}
 
 	private Properties jpaProperties() {

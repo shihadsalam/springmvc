@@ -10,8 +10,8 @@ import com.webapp.model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  List<User> findAll();
+  public List<User> findAll();
   
-  User findByName(String name);
+  public User findByName(String name);
   
 }
